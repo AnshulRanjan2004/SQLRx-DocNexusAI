@@ -1,0 +1,257 @@
+Schema Notes:
+
+Table 1: as_lsf_v1: File Name: Payments to HCPs
+
+CREATE TABLE default.as_lsf_v1
+(
+    `type_1_npi` UInt64 COMMENT 'This column stores the National Provider Identifier (NPI), which is a unique identification number for covered health care providers.. Samples: [{\'type_1_npi\': 1003000126}, {\'type_1_npi\': 1003000142}, {\'type_1_npi\': 1003000167}]',
+    `life_science_firm_name` String COMMENT 'This column contains the names of life science firms, identifying the organizations involved in the transactions.. Samples: [{\'life_science_firm_name\': \'TEVA PHARMACEUTICALS USA, INC.\'}, {\'life_science_firm_name\': \'ABBVIE, INC.\'}, {\'life_science_firm_name\': \'AMGEN INC.\'}]',
+    `product_name` String COMMENT 'This column lists the names of products associated with the life science firms, representing the items or services for which payments are made.. Samples: [{\'product_name\': \'JARDIANCE\'}, {\'product_name\': \'FISHER & PAYKEL HEALTHCARE\'}, {\'product_name\': \'EYLEA HD\'}]',
+    `nature_of_payment` Nullable(String) COMMENT 'This column describes the type of payments made, such as food and beverage, travel and lodging, or education, which provides context about the nature of the transactions.. Samples: [{\'nature_of_payment\': \'Food and Beverage\'}, {\'nature_of_payment\': \'Travel and Lodging\'}, {\'nature_of_payment\': \'Education\'}]',
+    `year` UInt16 COMMENT 'This column indicates the year during which the payment was made, allowing for temporal analysis of financial interactions.. Samples: [{\'year\': 2016}, {\'year\': 2017}, {\'year\': 2018}]',
+    `amount` Nullable(Float32) COMMENT 'This column reflects the monetary amount of the payment made, providing quantitative data for financial analysis.. Samples: [{\'amount\': 11.800000190734863}, {\'amount\': 16.09000015258789}, {\'amount\': 17.299999237060547}]'
+)
+ENGINE = SharedMergeTree('/clickhouse/tables/{uuid}/{shard}', '{replica}')
+ORDER BY (type_1_npi, year, life_science_firm_name, product_name)
+SETTINGS index_granularity = 8192
+COMMENT 'This table contains data related to life science firms, detailing their payments and associated information for various products across different years.'
+
+Table 2: Provider details file 
+
+CREATE TABLE default.as_providers_v1
+(
+    `type_1_npi` UInt64,
+    `type_2_npi_names` Array(String),
+    `type_2_npis` Array(UInt64),
+    `first_name` String,
+    `middle_name` String,
+    `last_name` String,
+    `gender` Enum8('M' = 1, 'F' = 2, 'O' = 3, 'U' = 4, '' = 5),
+    `specialties` Array(String),
+    `conditions_tags` Array(Tuple(
+        String,
+        String)),
+    `conditions` Array(String),
+    `cities` Array(String),
+    `states` Array(String),
+    `counties` Array(String),
+    `city_states` Array(String),
+    `hospital_names` Array(String),
+    `system_names` Array(String),
+    `affiliations` String,
+    `best_type_2_npi` UInt64,
+    `best_hospital_name` String,
+    `best_system_name` String,
+    `phone` Nullable(String),
+    `email` Nullable(String),
+    `linkedin` Nullable(String),
+    `twitter` Nullable(String)
+)
+ENGINE = SharedMergeTree('/clickhouse/tables/{uuid}/{shard}', '{replica}')
+PRIMARY KEY type_1_npi
+ORDER BY type_1_npi
+SETTINGS index_granularity = 8192
+
+Table 3: Referral Patterns file
+
+CREATE TABLE default.as_providers_referrals_v2
+(
+    `primary_type_2_npi` UInt64,
+    `referring_type_2_npi` UInt64,
+    `primary_type_2_npi_city` String,
+    `referring_type_2_npi_city` String,
+    `primary_type_2_npi_state` String,
+    `referring_type_2_npi_state` String,
+    `primary_type_2_npi_postal_code` String,
+    `referring_type_2_npi_postal_code` String,
+    `primary_type_2_npi_lat` Float64,
+    `referring_type_2_npi_lat` Float64,
+    `primary_type_2_npi_lng` Float64,
+    `referring_type_2_npi_lng` Float64,
+    `primary_type_2_npi_name` String,
+    `referring_type_2_npi_name` String,
+    `primary_hospital_name` String,
+    `referring_hospital_name` String,
+    `primary_type_1_npi` UInt64,
+    `referring_type_1_npi` UInt64,
+    `primary_type_1_npi_name` String,
+    `referring_type_1_npi_name` String,
+    `primary_specialty` String,
+    `referring_specialty` String,
+    `date` Date,
+    `diagnosis_code` String,
+    `diagnosis_code_description` String,
+    `procedure_code` String,
+    `procedure_code_description` String,
+    `total_claim_charge` Float64,
+    `total_claim_line_charge` Float64,
+    `patient_count` UInt64
+)
+ENGINE = SharedMergeTree('/clickhouse/tables/{uuid}/{shard}', '{replica}')
+ORDER BY (primary_specialty, referring_specialty, primary_hospital_name, diagnosis_code)
+SETTINGS index_granularity = 8192
+
+Table 4: Diagnosis & Procedure file
+CREATE TABLE default.as_providers_referrals_v2
+(
+    `primary_type_2_npi` UInt64,
+    `referring_type_2_npi` UInt64,
+    `primary_type_2_npi_city` String,
+    `referring_type_2_npi_city` String,
+    `primary_type_2_npi_state` String,
+    `referring_type_2_npi_state` String,
+    `primary_type_2_npi_postal_code` String,
+    `referring_type_2_npi_postal_code` String,
+    `primary_type_2_npi_lat` Float64,
+    `referring_type_2_npi_lat` Float64,
+    `primary_type_2_npi_lng` Float64,
+    `referring_type_2_npi_lng` Float64,
+    `primary_type_2_npi_name` String,
+    `referring_type_2_npi_name` String,
+    `primary_hospital_name` String,
+    `referring_hospital_name` String,
+    `primary_type_1_npi` UInt64,
+    `referring_type_1_npi` UInt64,
+    `primary_type_1_npi_name` String,
+    `referring_type_1_npi_name` String,
+    `primary_specialty` String,
+    `referring_specialty` String,
+    `date` Date,
+    `diagnosis_code` String,
+    `diagnosis_code_description` String,
+    `procedure_code` String,
+    `procedure_code_description` String,
+    `total_claim_charge` Float64,
+    `total_claim_line_charge` Float64,
+    `patient_count` UInt64
+)
+ENGINE = SharedMergeTree('/clickhouse/tables/{uuid}/{shard}', '{replica}')
+ORDER BY (primary_specialty, referring_specialty, primary_hospital_name, diagnosis_code)
+SETTINGS index_granularity = 8192
+
+Table 5: Pharmacy Claims file 
+
+CREATE TABLE default.fct_pharmacy_clear_claim_allstatus_cluster_brand
+(
+    `RX_ANCHOR_DD` Date32,
+    `RX_CLAIM_NBR` String,
+    `PATIENT_ID` String,
+    `SERVICE_DATE_DD` Date32,
+    `TRANSACTION_STATUS_NM` String,
+    `REJECT_REASON_1_CD` String,
+    `REJECT_REASON_1_DESC` String,
+    `NDC` String,
+    `NDC_DESC` String,
+    `NDC_GENERIC_NM` String,
+    `NDC_PREFERRED_BRAND_NM` String,
+    `NDC_DOSAGE_FORM_NM` String,
+    `NDC_DRUG_FORM_NM` String,
+    `NDC_DRUG_NM` String,
+    `NDC_DRUG_SUBCLASS_NM` String,
+    `NDC_DRUG_CLASS_NM` String,
+    `NDC_DRUG_GROUP_NM` String,
+    `NDC_ISBRANDED_IND` String,
+    `PRESCRIBED_NDC` String,
+    `DIAGNOSIS_CD` String,
+    `DAW_CD` Int64,
+    `UNIT_OF_MEASUREMENT_CD` String,
+    `PRESCRIBER_NBR_QUAL_CD` String,
+    `PRESCRIBER_NPI_NBR` String,
+    `PRESCRIBER_NPI_NM` String,
+    `PRESCRIBER_NPI_ENTITY_CD` Int64,
+    `PRESCRIBER_NPI_HCO_CLASS_OF_TRADE_DESC` String,
+    `PRESCRIBER_NPI_HCP_SEGMENT_DESC` String,
+    `PRESCRIBER_NPI_STATE_CD` String,
+    `PRESCRIBER_NPI_ZIP5_CD` String,
+    `PAYER_ID` Int64,
+    `PAYER_PAYER_NM` String,
+    `PAYER_COB_SEQ_VAL` Int64,
+    `PAYER_PLAN_SUBCHANNEL_CD` String,
+    `PAYER_PLAN_SUBCHANNEL_NM` String,
+    `PAYER_PLAN_CHANNEL_CD` String,
+    `PAYER_PLAN_CHANNEL_NM` String,
+    `PAYER_COMPANY_NM` String,
+    `PAYER_MCO_ISSUER_ID` String,
+    `PAYER_MCO_ISSUER_NM` String,
+    `PAYER_BIN_NBR` String,
+    `PAYER_PCN_NBR` String,
+    `PAYER_GROUP_STR` String,
+    `FILL_NUMBER_VAL` Int64,
+    `DISPENSED_QUANTITY_VAL` Decimal(38, 9),
+    `PRESCRIBED_QUANTITY_VAL` Decimal(38, 9),
+    `DAYS_SUPPLY_VAL` Decimal(38, 9),
+    `NUMBER_OF_REFILLS_AUTHORIZED_VAL` Int64,
+    `GROSS_DUE_AMT` Decimal(38, 9),
+    `TOTAL_PAID_AMT` Decimal(38, 9),
+    `PATIENT_TO_PAY_AMT` Decimal(38, 9),
+    `AWP_UNIT_PRICE_AMT` Float64,
+    `AWP_CALC_AMT` Float64
+)
+ENGINE = SharedMergeTree('/clickhouse/tables/{uuid}/{shard}', '{replica}')
+ORDER BY (NDC_PREFERRED_BRAND_NM, DIAGNOSIS_CD)
+SETTINGS index_granularity = 8192
+
+Table 6: Condition Directory file 
+
+CREATE TABLE default.mf_conditions
+(
+    `projectId` Int32 COMMENT 'A unique identifier for the project associated with the condition. This helps in linking the conditions to specific research or clinical projects.. Samples: ["{\'projectId\': 2}", "{\'projectId\': 3}", "{\'projectId\': 4}"]',
+    `display` Nullable(String) COMMENT 'A human-readable name or description of the medical condition, making it easier for users to understand the condition being referenced.. Samples: ["{\'display\': \'Aagenaes Syndrome\'}", "{\'display\': \'Aase Syndrome\'}", "{\'display\': \'Aarskog Syndrome\'}"]',
+    `codingType` Nullable(String) COMMENT 'Indicates the type of coding used for the condition, such as whether it pertains to a condition or a procedure. This allows for categorization of the information.. Samples: ["{\'codingType\': \'condition\'}", "{\'codingType\': \'procedure\'}"]',
+    `tcSize` Nullable(Int32) COMMENT 'Represents the size of the clinical trial or data set related to the condition. This may reflect the number of cases or records available for analysis.. Samples: ["{\'tcSize\': 8069}", "{\'tcSize\': 14776}", "{\'tcSize\': 4188}"]'
+)
+ENGINE = SharedMergeTree('/clickhouse/tables/{uuid}/{shard}', '{replica}')
+ORDER BY projectId
+SETTINGS index_granularity = 8192
+COMMENT 'This table stores information about various medical conditions, including their identifiers and associated descriptors.'
+
+Table 7: KOL Providers
+
+CREATE TABLE default.mf_providers
+(
+    `npi` Int32 COMMENT 'The National Provider Identifier (NPI) is a unique identification number for healthcare providers used for billing and identification purposes.. Samples: ["{\'npi\': 1003000522}", "{\'npi\': 1003000530}", "{\'npi\': 1003000704}"]',
+    `docId` Nullable(String) COMMENT 'A unique identifier for a document associated with the provider, which can be used for referencing specific documents or records.. Samples: ["{\'docId\': \'8933264\'}", "{\'docId\': \'8642563\'}", "{\'docId\': \'12943480\'}"]',
+    `personId` Nullable(Int32) COMMENT 'An optional identifier linking the provider to a specific person in the database, useful for managing provider-specific data.. Samples: ["{\'personId\': 12940465}", "{\'personId\': 7623843}", "{\'personId\': 10178928}"]',
+    `name` Nullable(String) COMMENT 'The full name of the healthcare provider, helping to identify them in a user-friendly way.. Samples: ["{\'name\': \'Ardalan Enkeshafi\'}", "{\'name\': \'Rashid Khalil\'}", "{\'name\': \'Anna C. Morgan\'}"]',
+    `displayName` Nullable(String) COMMENT 'A name intended for display, which may differ from the provider\'s legal name and can be formatted for user-friendly viewing.. Samples: ["{\'displayName\': \'Dr. Carolina P. Larmeu\'}", "{\'displayName\': \'Dr. Michelle E. Romeo\'}", "{\'displayName\': \'Dr. Daniel L. Cornish\'}"]',
+    `initials` Nullable(String) COMMENT 'The initials of the healthcare provider, often used in documents or professional settings for brevity.. Samples: ["{\'initials\': \'DE\'}", "{\'initials\': \'KT\'}", "{\'initials\': \'SC\'}"]',
+    `familyName` Nullable(String) COMMENT 'The last name of the provider, which is commonly used for identification and search purposes.. Samples: ["{\'familyName\': \'Dr. Enkeshafi\'}", "{\'familyName\': \'Dr. Khalil\'}", "{\'familyName\': \'Dr. Morgan\'}"]',
+    `score` Nullable(Float32) COMMENT 'A score representing the provider\'s performance or quality, potentially based on patient feedback or other metrics.. Samples: ["{\'score\': 27.735431671142578}", "{\'score\': 41.36767578125}", "{\'score\': 37.84454345703125}"]',
+    `phone` Nullable(String) COMMENT 'The contact phone number for the healthcare provider, essential for patient communications.. Samples: ["{\'phone\': \'706-769-0005\'}", "{\'phone\': \'800-230-4565\'}", "{\'phone\': \'404-778-5299\'}"]',
+    `isUSPrescriber` Nullable(Bool) COMMENT 'A boolean value indicating whether the provider is authorized to prescribe medications in the United States.. Samples: ["{\'isUSPrescriber\': True}"]',
+    `sex` Nullable(String) COMMENT 'The gender of the healthcare provider, which can be relevant for patient preferences and demographic statistics.. Samples: ["{\'sex\': \'F\'}", "{\'sex\': \'M\'}"]',
+    `image` Nullable(String) COMMENT 'A URL link to an image of the healthcare provider, often used in profiles to enhance visual identification.. Samples: ["{\'image\': \'https://cdn.medifind.com/imgrepo/205734\'}", "{\'image\': \'https://cdn.medifind.com/imgrepo/203894\'}", "{\'image\': \'https://cdn.medifind.com/imgrepo/212690\'}"]',
+    `primaryOrgName` Nullable(String) COMMENT 'The name of the primary organization or employer associated with the provider, giving context to their practice.. Samples: ["{\'primaryOrgName\': \'Mary Washington Medical Group Hospitalist Services, LLC\'}", "{\'primaryOrgName\': \'Sylvania Pain Medicine\'}", "{\'primaryOrgName\': \'Oakland Medical Center\'}"]',
+    `primaryOrgWebsite` Nullable(String) COMMENT 'The website URL of the primary organization, allowing users to access more information about the provider\'s place of employment.. Samples: ["{\'primaryOrgWebsite\': \'https://www.adventhealth.com/practices/adventhealth-medical-group\'}", "{\'primaryOrgWebsite\': \'https://www.slhn.org/\'}", "{\'primaryOrgWebsite\': \'www.kch.org\'}"]',
+    `highlyRatedConditionsCount` Nullable(Int32) COMMENT 'The count of medical conditions for which the provider has received high ratings, reflecting their areas of expertise.. Samples: ["{\'highlyRatedConditionsCount\': 3}", "{\'highlyRatedConditionsCount\': 4}", "{\'highlyRatedConditionsCount\': 11}"]',
+    `orgLogo` Nullable(String) COMMENT 'A URL link to the logo of the provider\'s organization, used for branding purposes in directories or listings.. Samples: ["{\'orgLogo\': \'https://cdn.medifind.com/orgs/MayoClinic\'}", "{\'orgLogo\': \'https://cdn.medifind.com/orgs/ClevelandClinic\'}", "{\'orgLogo\': \'https://cdn.medifind.com/orgs/WeillCornellMedicine\'}"]',
+    `orgWebsite` Nullable(String) COMMENT 'The website URL of the provider\'s affiliated organization, where additional information and resources may be available.. Samples: ["{\'orgWebsite\': \'https://www.stmaryshealthcaresystem.org/medical-group/\'}", "{\'orgWebsite\': \'www.paeyes.com/\'}", "{\'orgWebsite\': \'www.emoryhealthcare.org/\'}"]',
+    `healthSystem_website` Nullable(String) COMMENT 'The website of the healthcare system the provider is associated with, providing a broader context for their services.. Samples: ["{\'healthSystem_website\': \'www.marywashingtonhealthcare.com/\'}", "{\'healthSystem_website\': \'www.mercy.com\'}", "{\'healthSystem_website\': \'thrive.kaiserpermanente.org/care-near-you/northern-california/\'}"]',
+    `healthSystem_name` Nullable(String) COMMENT 'The name of the healthcare system, useful for understanding the organizational structure in which the provider operates.. Samples: ["{\'healthSystem_name\': \'Piedmont Healthcare System\'}", "{\'healthSystem_name\': \'Geisinger\'}", "{\'healthSystem_name\': \'Emory Healthcare\'}"]',
+    `codingCount` Nullable(Int32) COMMENT 'The count of instances where medical coding is applied for the provider, indicating their activity level in documentation.. Samples: ["{\'codingCount\': 35}", "{\'codingCount\': 16}", "{\'codingCount\': 25}"]',
+    `biography` Nullable(String) COMMENT 'A brief biography of the healthcare provider, summarizing their background, expertise, and practice focus.. Samples: ["{\'biography\': \'<p>Ardalan Enkeshafi is an Internal Medicine doctor in Bethesda, Maryland. Dr. Enkeshafi has been practicing medicine for over 29 years and is highly rated in 1 condition, according to our data. His top areas of expertise are Sepsis, Peptic Ulcer, Necrosis, and Acute Kidney Failure. Dr. Enkeshafi is currently accepting new patients.</p>\'}", "{\'biography\': \'<p>Rashid Khalil is an Anesthesiologist and a Pain Medicine doctor in Toledo, Ohio. Dr. Khalil has been practicing medicine for over 24 years and is highly rated in 5 conditions, according to our data. His top areas of expertise are Chronic Pain, Spinal Stenosis, Sciatica, and Cervical Spondylosis. Dr. Khalil is currently accepting new patients.</p>\'}", "{\'biography\': \'<p>Anna Morgan is a Pediatrics doctor in Oakland, California.</p>\'}"]',
+    `gradInstitution_year` Nullable(Int32) COMMENT 'The year the provider graduated from their medical education institution, indicating their duration of practice.. Samples: ["{\'gradInstitution_year\': 2005}", "{\'gradInstitution_year\': 1999}", "{\'gradInstitution_year\': 2001}"]',
+    `gradInstitution_gradYearNumber` Nullable(Int32) COMMENT 'The year number in which the provider completed their degree, providing context on their educational timeline.. Samples: ["{\'gradInstitution_gradYearNumber\': 1994}", "{\'gradInstitution_gradYearNumber\': 1999}", "{\'gradInstitution_gradYearNumber\': 1997}"]',
+    `gradInstitution_name` Nullable(String) COMMENT 'The name of the educational institution where the provider graduated, valuable for verifying qualifications.. Samples: ["{\'gradInstitution_name\': \'Other\'}", "{\'gradInstitution_name\': \'Ohio State University College Of Medicine\'}", "{\'gradInstitution_name\': \'State University Of New York At Buffalo School Of Medicine\'}"]',
+    `trainingInstitution_year` Nullable(Int32) COMMENT 'The year the provider completed their training, which may reflect their level of expertise in their specialty.. Samples: []',
+    `trainingInstitution_gradYearNumber` Nullable(Int32) COMMENT 'The year number for the provider\'s completion of training, offering insights into their professional development.. Samples: []',
+    `trainingInstitution_name` Nullable(String) COMMENT 'The name of the training institution where the provider received their postgraduate education, adding to their credentials.. Samples: []'
+)
+ENGINE = SharedMergeTree('/clickhouse/tables/{uuid}/{shard}', '{replica}')
+ORDER BY npi
+SETTINGS index_granularity = 8192
+COMMENT 'This table contains detailed information about healthcare providers, including their personal details, qualifications, affiliations, and contact information.'
+
+Table 8: KOL Scores
+
+CREATE TABLE default.mf_scores
+(
+    `id` Int32 COMMENT 'A unique identifier for each score entry, ensuring that each row can be distinctly referenced.. Samples: ["{\'id\': 4351668}", "{\'id\': 4351669}", "{\'id\': 4351670}"]',
+    `score` Nullable(Float32) COMMENT 'The score value associated with a particular entry. It is represented as a nullable float, allowing for entries that may not have a score assigned.. Samples: ["{\'score\': 24.3745059967041}", "{\'score\': 23.595327377319336}", "{\'score\': 22.514259338378906}"]',
+    `mf_providers_npi` Nullable(Int32) COMMENT 'The National Provider Identifier (NPI) associated with the healthcare provider linked to the score. This is also nullable, accommodating cases where provider information might not be available.. Samples: ["{\'mf_providers_npi\': 1902805740}", "{\'mf_providers_npi\': 1326251471}", "{\'mf_providers_npi\': 1871028977}"]',
+    `mf_conditions_projectId` Nullable(Int32) COMMENT 'An identifier for the specific project related to the conditions assessed. This column is nullable, reflecting instances where the project ID may be absent.. Samples: ["{\'mf_conditions_projectId\': 4931}", "{\'mf_conditions_projectId\': 6074}", "{\'mf_conditions_projectId\': 6187}"]'
+)
+ENGINE = SharedMergeTree('/clickhouse/tables/{uuid}/{shard}', '{replica}')
+ORDER BY id
+SETTINGS index_granularity = 8192
+COMMENT 'This table stores scores related to various providers and their associated conditions, facilitating analysis and comparisons within a healthcare context.'

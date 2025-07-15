@@ -1,0 +1,18 @@
+[project]
+name = "text-to-sql-lang"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "google-genai>=1.25.0",
+    "langchain>=0.3.26",
+    "langchain-community>=0.3.27",
+    "langchain-google-genai>=2.1.7",
+    "langchain-openai>=0.3.27",
+    "openai>=1.95.1",
+    "pandas>=2.3.1",
+    "sqlparse>=0.5.3",
+    "streamlit>=1.46.1",
+    "tiktoken>=0.9.0",
+]

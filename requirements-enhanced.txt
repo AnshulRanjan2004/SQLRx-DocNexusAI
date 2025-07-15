@@ -1,0 +1,32 @@
+# Core Streamlit and Web Framework
+streamlit>=1.28.0
+sqlparse>=0.4.4
+
+# Data Processing
+pandas>=1.5.0
+numpy>=1.24.0
+
+# AI/ML and Language Models
+langchain>=0.1.0
+langchain-google-genai>=1.0.0
+tiktoken>=0.5.0
+google-generativeai>=0.3.0
+
+# Environment and Configuration
+python-dotenv>=1.0.0
+
+# Database
+sqlite3
+
+# Optional enhancements (for future use)
+plotly>=5.15.0
+altair>=5.0.0
+
+# Development and Testing
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.0.0
