@@ -233,7 +233,7 @@ with col1:
         st.session_state["llm_cost"] += c
     
     # Enhanced button layout
-    col_btn1, col_btn2, col_btn3 = st.columns(3)
+    col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
     
     with col_btn1:
         if st.button("🔍 Analyze Query", use_container_width=True) and prompt.strip():
@@ -258,11 +258,117 @@ with col1:
                     st.error(f"Error generating SQL: {e}")
     
     with col_btn3:
+        if st.button("📋 View Schema", use_container_width=True):
+            st.session_state["show_schema"] = not st.session_state.get("show_schema", False)
+            st.rerun()
+    
+    with col_btn4:
         if st.button("🔄 Reset All", use_container_width=True):
             for k in session_keys:
                 if k in st.session_state:
                     del st.session_state[k]
             st.rerun()
+
+    # Display database schema if requested
+    if st.session_state.get("show_schema", False):
+        st.markdown("""
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">📋</div>
+                🗂️ Database Schema Overview
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Create tabs for different schema views
+        tab1, tab2, tab3 = st.tabs(["📊 Structured View", "🔍 Raw Schema", "📋 Table Summary"])
+        
+        with tab1:
+            st.markdown("#### 🏥 Healthcare Database Structure")
+            
+            # Parse and display schema in a more readable format
+            tables = []
+            current_table = None
+            
+            for line in db_schema.split('\n'):
+                if line.startswith('TABLE:'):
+                    current_table = line.replace('TABLE:', '').strip()
+                    tables.append(current_table)
+            
+            # Display tables in a nice grid
+            if tables:
+                st.markdown("**Available Tables:**")
+                cols = st.columns(3)
+                for i, table in enumerate(tables):
+                    with cols[i % 3]:
+                        st.markdown(f"🗂️ **{table}**")
+                
+                # Allow user to select a table for detailed view
+                selected_table = st.selectbox(
+                    "Select a table to view details:",
+                    [""] + tables,
+                    format_func=lambda x: "Choose a table..." if x == "" else f"📋 {x}"
+                )
+                
+                if selected_table:
+                    st.markdown(f"#### 📋 Table Details: {selected_table}")
+                    
+                    # Extract table details from schema
+                    table_found = False
+                    table_details = []
+                    
+                    for line in db_schema.split('\n'):
+                        if f'TABLE: {selected_table}' in line:
+                            table_found = True
+                            continue
+                        elif table_found and line.startswith('TABLE:'):
+                            break
+                        elif table_found and line.strip():
+                            table_details.append(line)
+                    
+                    if table_details:
+                        st.code('\n'.join(table_details), language="sql")
+        
+        with tab2:
+            st.markdown("#### 🔍 Complete Raw Schema")
+            st.code(db_schema, language="sql")
+        
+        with tab3:
+            st.markdown("#### 📋 Quick Table Summary")
+            
+            # Healthcare table descriptions
+            table_descriptions = {
+                "as_lsf_payments": "💊 **Pharmaceutical Payments**: Payments from life science firms to healthcare providers",
+                "as_providers": "👩‍⚕️ **Provider Details**: Comprehensive healthcare provider information and specialties",
+                "as_providers_referrals": "🔗 **Referral Patterns**: Healthcare provider referral relationships and networks",
+                "fct_pharmacy_claims": "💉 **Pharmacy Claims**: Prescription claims and pharmaceutical dispensing data",
+                "mf_conditions": "🏥 **Medical Conditions**: Directory of medical conditions and classifications",
+                "mf_providers": "⭐ **KOL Providers**: Key Opinion Leader provider profiles and ratings",
+                "mf_scores": "📊 **Provider Scores**: Performance scores and metrics for healthcare providers"
+            }
+            
+            # Display table descriptions
+            for table_name, description in table_descriptions.items():
+                if table_name in db_schema:
+                    st.markdown(f"- {description}")
+            
+            # Quick statistics
+            st.markdown("---")
+            st.markdown("**📊 Schema Statistics:**")
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric("📋 Total Tables", len(tables))
+            
+            with col2:
+                # Count total columns (approximate)
+                column_count = db_schema.count("INTEGER") + db_schema.count("TEXT") + db_schema.count("REAL")
+                st.metric("📊 Total Columns", column_count)
+            
+            with col3:
+                # Count foreign keys
+                fk_count = db_schema.count("FOREIGN KEY")
+                st.metric("🔗 Foreign Keys", fk_count)
 
     # Display interpretation if available
     if st.session_state["interpretation"]:
@@ -445,7 +551,7 @@ if st.session_state["query_result"]:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666; margin-top: 2rem;">
-    <p>🏥 Healthcare SQL Analytics Platform | Powered by AI & LangChain</p>
+    <p>🏥 DocNexux AI SQL Analytics Platform | Powered by AI & LangChain</p>
     <p>Built for secure, compliant healthcare data analysis</p>
 </div>
 """, unsafe_allow_html=True)
