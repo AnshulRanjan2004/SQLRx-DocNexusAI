@@ -50,21 +50,21 @@ def run_agent(system: str, human: str) -> Dict[str, Any]:
 # ---------- Healthcare Domain Context ----------
 HEALTHCARE_CONTEXT = """
 Key Dataset Terms:
-- ICD-10: International Classification of Diseases, 10th Revision – standard diagnostic codes
-- CPT: Current Procedural Terminology – used to describe procedures and services
-- HCP: Healthcare Professional – includes doctors, specialists, NPs, etc.
-- HCO: Healthcare Organization – hospitals, health systems, clinics, ASCs, etc.
+- ICD-10: International Classification of Diseases, 10th Revision standard diagnostic codes
+- CPT: Current Procedural Terminology used to describe procedures and services
+- HCP: Healthcare Professional includes doctors, specialists, NPs, etc.
+- HCO: Healthcare Organization hospitals, health systems, clinics, ASCs, etc.
 - Claim: A record of a billed interaction between a patient and provider for a service
 - Patient: The individual receiving treatment or services
 - Procedure: A medical operation or clinical service performed (e.g., surgery, screening)
 - Drug: A prescribed or administered pharmaceutical product (e.g., Ozempic, Humira)
 - Therapy Area: The medical area or specialty the product/procedure is targeting (e.g., endocrinology, cardiology)
-- KOL: Key Opinion Leader – highly influential HCPs often involved in research and education
+- KOL: Key Opinion Leader highly influential HCPs often involved in research and education
 - Trial: A clinical study registered in databases (e.g., ClinicalTrials.gov) used to evaluate drugs/devices
-- NPI: National Provider Identifier – unique identification number for healthcare providers
-- NDC: National Drug Code – unique identifier for drug products
-- AWP: Average Wholesale Price – benchmark pricing for pharmaceuticals
-- DAW: Dispense As Written – prescription instruction codes
+- NPI: National Provider Identifier  unique identification number for healthcare providers
+- NDC: National Drug Code unique identifier for drug products
+- AWP: Average Wholesale Price benchmark pricing for pharmaceuticals
+- DAW: Dispense As Written prescription instruction codes
 - Type 1 NPI: Individual healthcare provider identifier
 - Type 2 NPI: Organization/group practice identifier
 
