@@ -10,7 +10,7 @@ from utils.helper import calculate_gpt4o_mini_cost
 import tiktoken
 
 # ---------------- Gemini config ----------------
-GEMINI_KEY = "AIzaSyBRNtKX-MFN-aY1Odm98o499qzPDaHVhO4"       # same .env file
+GEMINI_KEY = ""     # same .env file
 MODEL_NAME = "gemini-2.5-flash"   # or gemini-2.0-flash [^45^]
 
 llm = ChatGoogleGenerativeAI(
