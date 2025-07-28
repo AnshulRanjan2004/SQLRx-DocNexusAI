@@ -7,7 +7,7 @@ from train_model import Model
 class MyVanna(ChromaDB_VectorStore, GoogleGeminiChat):
     def __init__(self, config=None):
         ChromaDB_VectorStore.__init__(self, config=config)
-        GoogleGeminiChat.__init__(self, config={'api_key': 'AIzaSyBRNtKX-MFN-aY1Odm98o499qzPDaHVhO4', 'model': 'gemini-2.0-flash'})
+        GoogleGeminiChat.__init__(self, config={'api_key': '', 'model': 'gemini-2.0-flash'})
 
 @st.cache_resource(ttl=3600)
 def setup_connexion():
